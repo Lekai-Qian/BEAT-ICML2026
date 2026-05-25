@@ -1,0 +1,958 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+
+  <!-- Primary Meta Tags -->
+  <meta name="title" content="BEAT: Tokenizing and Generating Symbolic Music by Uniform Temporal Steps">
+  <meta name="description" content="A novel symbolic music encoding method that adopts beat units as the basic primitive, achieving efficient serialization while explicitly preserving musical priors.">
+  <meta name="keywords" content="symbolic music, music encoding, music representation, music generation, deep learning">
+  <meta name="robots" content="index, follow">
+  <meta name="language" content="English">
+
+  <!-- Open Graph / Facebook -->
+  <meta property="og:type" content="article">
+  <meta property="og:title" content="BEAT: Tokenizing and Generating Symbolic Music by Uniform Temporal Steps">
+  <meta property="og:description" content="A novel symbolic music encoding method that adopts beat units as the basic primitive, achieving efficient serialization while explicitly preserving musical priors.">
+
+  <!-- Academic/Research Specific -->
+  <meta name="citation_title" content="BEAT: Tokenizing and Generating Symbolic Music by Uniform Temporal Steps">
+  <meta name="citation_publication_date" content="2026">
+
+  <title>BEAT: Tokenizing and Generating Symbolic Music by Uniform Temporal Steps</title>
+
+  <!-- Favicon -->
+  <link rel="icon" type="image/x-icon" href="static/images/favicon.ico">
+
+  <!-- CSS -->
+  <link rel="stylesheet" href="static/css/bulma.min.css">
+  <link rel="stylesheet" href="static/css/index.css">
+  <link rel="stylesheet" href="static/css/bulma-carousel.min.css">
+  <link rel="stylesheet" href="static/css/bulma-slider.min.css">
+  <link rel="stylesheet" href="static/css/fontawesome.all.min.css">
+
+  <!-- Fonts -->
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+
+  <!-- Scripts -->
+  <script defer src="https://ajax.googleapis.com/ajax/libs/jquery/3.5.1/jquery.min.js"></script>
+  <script defer src="static/js/fontawesome.all.min.js"></script>
+  <script defer src="static/js/bulma-carousel.min.js"></script>
+  <script defer src="static/js/bulma-slider.min.js"></script>
+  <script defer src="static/js/index.js"></script>
+</head>
+<body>
+
+  <!-- Scroll to Top Button -->
+  <button class="scroll-to-top" onclick="scrollToTop()" title="Scroll to top" aria-label="Scroll to top">
+    <i class="fas fa-chevron-up"></i>
+  </button>
+
+  <main id="main-content">
+
+  <!-- Hero Section -->
+  <section class="hero">
+    <div class="hero-body">
+      <div class="container is-max-desktop">
+        <div class="columns is-centered">
+          <div class="column has-text-centered">
+            <h1 class="title is-1 publication-title">BEAT: Tokenizing and Generating Symbolic Music by Uniform Temporal Steps</h1>
+
+            <div class="is-size-5 publication-authors">
+              <span class="author-block">Lekai Qian,</span>
+              <span class="author-block">Haoyu Gu,</span>
+              <span class="author-block">Jingwei Zhao,</span>
+              <span class="author-block">Ziyu Wang</span>
+            </div>
+
+            <div class="is-size-5 publication-authors" style="margin-top: 0.5rem;">
+              <span class="author-block"><i>ICML 2026</i></span>
+            </div>
+
+          </div>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- Abstract -->
+  <section class="section hero is-light">
+    <div class="container is-max-desktop">
+      <div class="columns is-centered has-text-centered">
+        <div class="column is-four-fifths">
+          <h2 class="title is-3">Abstract</h2>
+          <div class="content has-text-justified">
+            <p>
+              Tokenizing music to fit the general framework of language models is a compelling challenge, especially considering the diverse symbolic structures in which music can be represented, including sequences, grids, and graphs. To date, most approaches tokenize symbolic music as sequences of musical events, such as onsets, pitches, time shifts, or compound note events. This strategy is intuitive and has proven effective in Transformer-based models, but it treats the regularity of musical time implicitly: individual tokens may span different durations, resulting in non-uniform time progression.
+            </p>
+            <p>
+              In this paper, we instead consider whether an alternative tokenization is possible, where an even-length musical step (e.g., a beat) serves as the basic unit. Specifically, we encode all events within a single time step at the same pitch as one token, and group tokens explicitly by time step, which resembles a sparse encoding of a piano roll representation. We evaluate the proposed tokenization on music continuation and accompaniment generation tasks, comparing it with mainstream event-based methods. Results show improved musical quality and long-term structural coherence, while additional analyses confirm higher efficiency and more effective capture of long-range patterns with the proposed tokenization.
+            </p>
+          </div>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- Method / Framework Figure -->
+  <section class="section">
+    <div class="container is-max-desktop">
+      <div class="columns is-centered has-text-centered">
+        <div class="column is-full">
+          <h2 class="title is-3">Method</h2>
+          <figure class="image" style="margin: 1.5rem auto; max-width: 1000px;">
+            <img src="static/images/framework.png" alt="BEAT framework: beat-aligned enumeration of active tones">
+          </figure>
+          <p class="content has-text-justified" style="margin-top: 1rem;">
+            BEAT re-expresses notes as temporal states (onset / sustain / rest) and serializes music beat by beat, enumerating only the active pitches within each beat. This yields a time-centric token stream where sequence position corresponds directly to musical time.
+          </p>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- Subjective Evaluation Samples -->
+  <section class="section hero is-small" id="section-subjective">
+    <div class="container samples-container">
+      <h2 class="title is-3 has-text-centered">Subjective Evaluation Samples</h2>
+      <p class="subtitle is-5 has-text-centered" style="margin-bottom: 1rem;">
+        Audio samples used for subjective evaluation experiments (MOS study)
+      </p>
+
+      <!-- Quick Navigation -->
+      <div class="has-text-centered" style="margin-bottom: 2rem;">
+        <a href="#section-piano-eval" class="button is-rounded" style="margin: 0.3rem; font-weight: 500; background-color: #2563eb; color: white;">Piano Continuation</a>
+        <a href="#section-multitrack-eval" class="button is-rounded" style="margin: 0.3rem; font-weight: 500; background-color: #16a34a; color: white;">Multitrack Continuation</a>
+        <a href="#section-accomp-eval" class="button is-rounded" style="margin: 0.3rem; font-weight: 500; background-color: #d97706; color: white;">Real-time Accompaniment</a>
+      </div>
+
+      <!-- Piano Continuation Task -->
+      <div class="samples-section" id="section-piano-eval">
+        <h3 class="samples-section-title">Piano Continuation</h3>
+        <p class="samples-section-desc">Each sample begins with the same 4-bar prompt followed by a generated continuation. Listeners rate samples on three criteria: Coherence with Prompt (continuity in melody/rhythm, consistency in harmony/style), Musical Plausibility (harmonic correctness, phrase structure), and Musicality (overall quality).</p>
+
+        <div class="music-card full-width row-layout">
+          <!-- Sample 1 -->
+          <div class="audio-row-pair eval-row">
+            <span class="row-label">Sample 1</span>
+            <div class="audio-grid-eval piano-grid">
+              <div class="audio-item">
+                <span class="music-label"><span class="music-tag prompt">Prompt</span></span>
+                <audio controls class="music-player" preload="none">
+                  <source src="static/samples/subjective_eval/piano/prompt/1.mp3" type="audio/mpeg">
+                </audio>
+              </div>
+              <div class="audio-item">
+                <span class="music-label"><span class="music-tag gt">GT</span></span>
+                <audio controls class="music-player" preload="none">
+                  <source src="static/samples/subjective_eval/piano/GT/1.mp3" type="audio/mpeg">
+                </audio>
+              </div>
+              <div class="audio-item">
+                <span class="music-label"><span class="music-tag ours">Ours</span></span>
+                <audio controls class="music-player" preload="none">
+                  <source src="static/samples/subjective_eval/piano/ours/1.mp3" type="audio/mpeg">
+                </audio>
+              </div>
+              <div class="audio-item">
+                <span class="music-label"><span class="music-tag abc">ABC</span></span>
+                <audio controls class="music-player" preload="none">
+                  <source src="static/samples/subjective_eval/piano/ABC/1.mp3" type="audio/mpeg">
+                </audio>
+              </div>
+              <div class="audio-item">
+                <span class="music-label"><span class="music-tag remi">REMI</span></span>
+                <audio controls class="music-player" preload="none">
+                  <source src="static/samples/subjective_eval/piano/REMI/1.mp3" type="audio/mpeg">
+                </audio>
+              </div>
+              <div class="audio-item">
+                <span class="music-label"><span class="music-tag cp">CP</span></span>
+                <audio controls class="music-player" preload="none">
+                  <source src="static/samples/subjective_eval/piano/Compoundword/1.mp3" type="audio/mpeg">
+                </audio>
+              </div>
+              <div class="audio-item">
+                <span class="music-label"><span class="music-tag anticipate">Antic-S</span></span>
+                <audio controls class="music-player" preload="none">
+                  <source src="static/samples/subjective_eval/piano/anticipate_small/1.mp3" type="audio/mpeg">
+                </audio>
+              </div>
+              <div class="audio-item">
+                <span class="music-label"><span class="music-tag anticipate">Antic-L</span></span>
+                <audio controls class="music-player" preload="none">
+                  <source src="static/samples/subjective_eval/piano/anticipate_large/1.mp3" type="audio/mpeg">
+                </audio>
+              </div>
+            </div>
+          </div>
+
+          <!-- Sample 2 -->
+          <div class="audio-row-pair eval-row">
+            <span class="row-label">Sample 2</span>
+            <div class="audio-grid-eval piano-grid">
+              <div class="audio-item">
+                <span class="music-label"><span class="music-tag prompt">Prompt</span></span>
+                <audio controls class="music-player" preload="none">
+                  <source src="static/samples/subjective_eval/piano/prompt/4.mp3" type="audio/mpeg">
+                </audio>
+              </div>
+              <div class="audio-item">
+                <span class="music-label"><span class="music-tag gt">GT</span></span>
+                <audio controls class="music-player" preload="none">
+                  <source src="static/samples/subjective_eval/piano/GT/4.mp3" type="audio/mpeg">
+                </audio>
+              </div>
+              <div class="audio-item">
+                <span class="music-label"><span class="music-tag ours">Ours</span></span>
+                <audio controls class="music-player" preload="none">
+                  <source src="static/samples/subjective_eval/piano/ours/4.mp3" type="audio/mpeg">
+                </audio>
+              </div>
+              <div class="audio-item">
+                <span class="music-label"><span class="music-tag abc">ABC</span></span>
+                <audio controls class="music-player" preload="none">
+                  <source src="static/samples/subjective_eval/piano/ABC/4.mp3" type="audio/mpeg">
+                </audio>
+              </div>
+              <div class="audio-item">
+                <span class="music-label"><span class="music-tag remi">REMI</span></span>
+                <audio controls class="music-player" preload="none">
+                  <source src="static/samples/subjective_eval/piano/REMI/4.mp3" type="audio/mpeg">
+                </audio>
+              </div>
+              <div class="audio-item">
+                <span class="music-label"><span class="music-tag cp">CP</span></span>
+                <audio controls class="music-player" preload="none">
+                  <source src="static/samples/subjective_eval/piano/Compoundword/4.mp3" type="audio/mpeg">
+                </audio>
+              </div>
+              <div class="audio-item">
+                <span class="music-label"><span class="music-tag anticipate">Antic-S</span></span>
+                <audio controls class="music-player" preload="none">
+                  <source src="static/samples/subjective_eval/piano/anticipate_small/4.mp3" type="audio/mpeg">
+                </audio>
+              </div>
+              <div class="audio-item">
+                <span class="music-label"><span class="music-tag anticipate">Antic-L</span></span>
+                <audio controls class="music-player" preload="none">
+                  <source src="static/samples/subjective_eval/piano/anticipate_large/4.mp3" type="audio/mpeg">
+                </audio>
+              </div>
+            </div>
+          </div>
+
+          <!-- Sample 3 -->
+          <div class="audio-row-pair eval-row">
+            <span class="row-label">Sample 3</span>
+            <div class="audio-grid-eval piano-grid">
+              <div class="audio-item">
+                <span class="music-label"><span class="music-tag prompt">Prompt</span></span>
+                <audio controls class="music-player" preload="none">
+                  <source src="static/samples/subjective_eval/piano/prompt/5.mp3" type="audio/mpeg">
+                </audio>
+              </div>
+              <div class="audio-item">
+                <span class="music-label"><span class="music-tag gt">GT</span></span>
+                <audio controls class="music-player" preload="none">
+                  <source src="static/samples/subjective_eval/piano/GT/5.mp3" type="audio/mpeg">
+                </audio>
+              </div>
+              <div class="audio-item">
+                <span class="music-label"><span class="music-tag ours">Ours</span></span>
+                <audio controls class="music-player" preload="none">
+                  <source src="static/samples/subjective_eval/piano/ours/5.mp3" type="audio/mpeg">
+                </audio>
+              </div>
+              <div class="audio-item">
+                <span class="music-label"><span class="music-tag abc">ABC</span></span>
+                <audio controls class="music-player" preload="none">
+                  <source src="static/samples/subjective_eval/piano/ABC/5.mp3" type="audio/mpeg">
+                </audio>
+              </div>
+              <div class="audio-item">
+                <span class="music-label"><span class="music-tag remi">REMI</span></span>
+                <audio controls class="music-player" preload="none">
+                  <source src="static/samples/subjective_eval/piano/REMI/5.mp3" type="audio/mpeg">
+                </audio>
+              </div>
+              <div class="audio-item">
+                <span class="music-label"><span class="music-tag cp">CP</span></span>
+                <audio controls class="music-player" preload="none">
+                  <source src="static/samples/subjective_eval/piano/Compoundword/5.mp3" type="audio/mpeg">
+                </audio>
+              </div>
+              <div class="audio-item">
+                <span class="music-label"><span class="music-tag anticipate">Antic-S</span></span>
+                <audio controls class="music-player" preload="none">
+                  <source src="static/samples/subjective_eval/piano/anticipate_small/5.mp3" type="audio/mpeg">
+                </audio>
+              </div>
+              <div class="audio-item">
+                <span class="music-label"><span class="music-tag anticipate">Antic-L</span></span>
+                <audio controls class="music-player" preload="none">
+                  <source src="static/samples/subjective_eval/piano/anticipate_large/5.mp3" type="audio/mpeg">
+                </audio>
+              </div>
+            </div>
+          </div>
+
+          <!-- Sample 4 -->
+          <div class="audio-row-pair eval-row">
+            <span class="row-label">Sample 4</span>
+            <div class="audio-grid-eval piano-grid">
+              <div class="audio-item">
+                <span class="music-label"><span class="music-tag prompt">Prompt</span></span>
+                <audio controls class="music-player" preload="none">
+                  <source src="static/samples/subjective_eval/piano/prompt/2.mp3" type="audio/mpeg">
+                </audio>
+              </div>
+              <div class="audio-item">
+                <span class="music-label"><span class="music-tag gt">GT</span></span>
+                <audio controls class="music-player" preload="none">
+                  <source src="static/samples/subjective_eval/piano/GT/2.mp3" type="audio/mpeg">
+                </audio>
+              </div>
+              <div class="audio-item">
+                <span class="music-label"><span class="music-tag ours">Ours</span></span>
+                <audio controls class="music-player" preload="none">
+                  <source src="static/samples/subjective_eval/piano/ours/2.mp3" type="audio/mpeg">
+                </audio>
+              </div>
+              <div class="audio-item">
+                <span class="music-label"><span class="music-tag abc">ABC</span></span>
+                <audio controls class="music-player" preload="none">
+                  <source src="static/samples/subjective_eval/piano/ABC/2.mp3" type="audio/mpeg">
+                </audio>
+              </div>
+              <div class="audio-item">
+                <span class="music-label"><span class="music-tag remi">REMI</span></span>
+                <audio controls class="music-player" preload="none">
+                  <source src="static/samples/subjective_eval/piano/REMI/2.mp3" type="audio/mpeg">
+                </audio>
+              </div>
+              <div class="audio-item">
+                <span class="music-label"><span class="music-tag cp">CP</span></span>
+                <audio controls class="music-player" preload="none">
+                  <source src="static/samples/subjective_eval/piano/Compoundword/2.mp3" type="audio/mpeg">
+                </audio>
+              </div>
+              <div class="audio-item">
+                <span class="music-label"><span class="music-tag anticipate">Antic-S</span></span>
+                <audio controls class="music-player" preload="none">
+                  <source src="static/samples/subjective_eval/piano/anticipate_small/2.mp3" type="audio/mpeg">
+                </audio>
+              </div>
+              <div class="audio-item">
+                <span class="music-label"><span class="music-tag anticipate">Antic-L</span></span>
+                <audio controls class="music-player" preload="none">
+                  <source src="static/samples/subjective_eval/piano/anticipate_large/2.mp3" type="audio/mpeg">
+                </audio>
+              </div>
+            </div>
+          </div>
+
+          <!-- Sample 5 -->
+          <div class="audio-row-pair eval-row">
+            <span class="row-label">Sample 5</span>
+            <div class="audio-grid-eval piano-grid">
+              <div class="audio-item">
+                <span class="music-label"><span class="music-tag prompt">Prompt</span></span>
+                <audio controls class="music-player" preload="none">
+                  <source src="static/samples/subjective_eval/piano/prompt/3.mp3" type="audio/mpeg">
+                </audio>
+              </div>
+              <div class="audio-item">
+                <span class="music-label"><span class="music-tag gt">GT</span></span>
+                <audio controls class="music-player" preload="none">
+                  <source src="static/samples/subjective_eval/piano/GT/3.mp3" type="audio/mpeg">
+                </audio>
+              </div>
+              <div class="audio-item">
+                <span class="music-label"><span class="music-tag ours">Ours</span></span>
+                <audio controls class="music-player" preload="none">
+                  <source src="static/samples/subjective_eval/piano/ours/3.mp3" type="audio/mpeg">
+                </audio>
+              </div>
+              <div class="audio-item">
+                <span class="music-label"><span class="music-tag abc">ABC</span></span>
+                <audio controls class="music-player" preload="none">
+                  <source src="static/samples/subjective_eval/piano/ABC/3.mp3" type="audio/mpeg">
+                </audio>
+              </div>
+              <div class="audio-item">
+                <span class="music-label"><span class="music-tag remi">REMI</span></span>
+                <audio controls class="music-player" preload="none">
+                  <source src="static/samples/subjective_eval/piano/REMI/3.mp3" type="audio/mpeg">
+                </audio>
+              </div>
+              <div class="audio-item">
+                <span class="music-label"><span class="music-tag cp">CP</span></span>
+                <audio controls class="music-player" preload="none">
+                  <source src="static/samples/subjective_eval/piano/Compoundword/3.mp3" type="audio/mpeg">
+                </audio>
+              </div>
+              <div class="audio-item">
+                <span class="music-label"><span class="music-tag anticipate">Antic-S</span></span>
+                <audio controls class="music-player" preload="none">
+                  <source src="static/samples/subjective_eval/piano/anticipate_small/3.mp3" type="audio/mpeg">
+                </audio>
+              </div>
+              <div class="audio-item">
+                <span class="music-label"><span class="music-tag anticipate">Antic-L</span></span>
+                <audio controls class="music-player" preload="none">
+                  <source src="static/samples/subjective_eval/piano/anticipate_large/3.mp3" type="audio/mpeg">
+                </audio>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- Multitrack Continuation Task -->
+      <div class="samples-section" id="section-multitrack-eval">
+        <h3 class="samples-section-title">Multitrack Continuation</h3>
+        <p class="samples-section-desc">Each sample begins with the same 4-bar multi-instrument prompt followed by a generated continuation. Listeners rate samples on three criteria: Coherence with Prompt (continuity in melody/rhythm, consistency in harmony/style), Musical Plausibility (harmonic correctness, phrase structure), and Musicality (overall quality).</p>
+
+        <div class="music-card full-width row-layout">
+          <!-- Sample 1 -->
+          <div class="audio-row-pair eval-row">
+            <span class="row-label">Sample 1</span>
+            <div class="audio-grid-eval multitrack-grid">
+              <div class="audio-item">
+                <span class="music-label"><span class="music-tag prompt">Prompt</span></span>
+                <audio controls class="music-player" preload="none">
+                  <source src="static/samples/subjective_eval/multitrack/prompt/5.mp3" type="audio/mpeg">
+                </audio>
+              </div>
+              <div class="audio-item">
+                <span class="music-label"><span class="music-tag gt">GT</span></span>
+                <audio controls class="music-player" preload="none">
+                  <source src="static/samples/subjective_eval/multitrack/GT/5.mp3" type="audio/mpeg">
+                </audio>
+              </div>
+              <div class="audio-item">
+                <span class="music-label"><span class="music-tag ours">Ours</span></span>
+                <audio controls class="music-player" preload="none">
+                  <source src="static/samples/subjective_eval/multitrack/ours/5.mp3" type="audio/mpeg">
+                </audio>
+              </div>
+              <div class="audio-item">
+                <span class="music-label"><span class="music-tag abc">ABC</span></span>
+                <audio controls class="music-player" preload="none">
+                  <source src="static/samples/subjective_eval/multitrack/ABC/5.mp3" type="audio/mpeg">
+                </audio>
+              </div>
+              <div class="audio-item">
+                <span class="music-label"><span class="music-tag remi">REMI</span></span>
+                <audio controls class="music-player" preload="none">
+                  <source src="static/samples/subjective_eval/multitrack/REMI/5.mp3" type="audio/mpeg">
+                </audio>
+              </div>
+              <div class="audio-item">
+                <span class="music-label"><span class="music-tag anticipate">Antic-S</span></span>
+                <audio controls class="music-player" preload="none">
+                  <source src="static/samples/subjective_eval/multitrack/anticipate_small/5.mp3" type="audio/mpeg">
+                </audio>
+              </div>
+              <div class="audio-item">
+                <span class="music-label"><span class="music-tag anticipate">Antic-L</span></span>
+                <audio controls class="music-player" preload="none">
+                  <source src="static/samples/subjective_eval/multitrack/anticipate_large/5.mp3" type="audio/mpeg">
+                </audio>
+              </div>
+            </div>
+          </div>
+
+          <!-- Sample 2 -->
+          <div class="audio-row-pair eval-row">
+            <span class="row-label">Sample 2</span>
+            <div class="audio-grid-eval multitrack-grid">
+              <div class="audio-item">
+                <span class="music-label"><span class="music-tag prompt">Prompt</span></span>
+                <audio controls class="music-player" preload="none">
+                  <source src="static/samples/subjective_eval/multitrack/prompt/2.mp3" type="audio/mpeg">
+                </audio>
+              </div>
+              <div class="audio-item">
+                <span class="music-label"><span class="music-tag gt">GT</span></span>
+                <audio controls class="music-player" preload="none">
+                  <source src="static/samples/subjective_eval/multitrack/GT/2.mp3" type="audio/mpeg">
+                </audio>
+              </div>
+              <div class="audio-item">
+                <span class="music-label"><span class="music-tag ours">Ours</span></span>
+                <audio controls class="music-player" preload="none">
+                  <source src="static/samples/subjective_eval/multitrack/ours/2.mp3" type="audio/mpeg">
+                </audio>
+              </div>
+              <div class="audio-item">
+                <span class="music-label"><span class="music-tag abc">ABC</span></span>
+                <audio controls class="music-player" preload="none">
+                  <source src="static/samples/subjective_eval/multitrack/ABC/2.mp3" type="audio/mpeg">
+                </audio>
+              </div>
+              <div class="audio-item">
+                <span class="music-label"><span class="music-tag remi">REMI</span></span>
+                <audio controls class="music-player" preload="none">
+                  <source src="static/samples/subjective_eval/multitrack/REMI/2.mp3" type="audio/mpeg">
+                </audio>
+              </div>
+              <div class="audio-item">
+                <span class="music-label"><span class="music-tag anticipate">Antic-S</span></span>
+                <audio controls class="music-player" preload="none">
+                  <source src="static/samples/subjective_eval/multitrack/anticipate_small/2.mp3" type="audio/mpeg">
+                </audio>
+              </div>
+              <div class="audio-item">
+                <span class="music-label"><span class="music-tag anticipate">Antic-L</span></span>
+                <audio controls class="music-player" preload="none">
+                  <source src="static/samples/subjective_eval/multitrack/anticipate_large/2.mp3" type="audio/mpeg">
+                </audio>
+              </div>
+            </div>
+          </div>
+
+          <!-- Sample 3 -->
+          <div class="audio-row-pair eval-row">
+            <span class="row-label">Sample 3</span>
+            <div class="audio-grid-eval multitrack-grid">
+              <div class="audio-item">
+                <span class="music-label"><span class="music-tag prompt">Prompt</span></span>
+                <audio controls class="music-player" preload="none">
+                  <source src="static/samples/subjective_eval/multitrack/prompt/3.mp3" type="audio/mpeg">
+                </audio>
+              </div>
+              <div class="audio-item">
+                <span class="music-label"><span class="music-tag gt">GT</span></span>
+                <audio controls class="music-player" preload="none">
+                  <source src="static/samples/subjective_eval/multitrack/GT/3.mp3" type="audio/mpeg">
+                </audio>
+              </div>
+              <div class="audio-item">
+                <span class="music-label"><span class="music-tag ours">Ours</span></span>
+                <audio controls class="music-player" preload="none">
+                  <source src="static/samples/subjective_eval/multitrack/ours/3.mp3" type="audio/mpeg">
+                </audio>
+              </div>
+              <div class="audio-item">
+                <span class="music-label"><span class="music-tag abc">ABC</span></span>
+                <audio controls class="music-player" preload="none">
+                  <source src="static/samples/subjective_eval/multitrack/ABC/3.mp3" type="audio/mpeg">
+                </audio>
+              </div>
+              <div class="audio-item">
+                <span class="music-label"><span class="music-tag remi">REMI</span></span>
+                <audio controls class="music-player" preload="none">
+                  <source src="static/samples/subjective_eval/multitrack/REMI/3.mp3" type="audio/mpeg">
+                </audio>
+              </div>
+              <div class="audio-item">
+                <span class="music-label"><span class="music-tag anticipate">Antic-S</span></span>
+                <audio controls class="music-player" preload="none">
+                  <source src="static/samples/subjective_eval/multitrack/anticipate_small/3.mp3" type="audio/mpeg">
+                </audio>
+              </div>
+              <div class="audio-item">
+                <span class="music-label"><span class="music-tag anticipate">Antic-L</span></span>
+                <audio controls class="music-player" preload="none">
+                  <source src="static/samples/subjective_eval/multitrack/anticipate_large/3.mp3" type="audio/mpeg">
+                </audio>
+              </div>
+            </div>
+          </div>
+
+          <!-- Sample 4 -->
+          <div class="audio-row-pair eval-row">
+            <span class="row-label">Sample 4</span>
+            <div class="audio-grid-eval multitrack-grid">
+              <div class="audio-item">
+                <span class="music-label"><span class="music-tag prompt">Prompt</span></span>
+                <audio controls class="music-player" preload="none">
+                  <source src="static/samples/subjective_eval/multitrack/prompt/4.mp3" type="audio/mpeg">
+                </audio>
+              </div>
+              <div class="audio-item">
+                <span class="music-label"><span class="music-tag gt">GT</span></span>
+                <audio controls class="music-player" preload="none">
+                  <source src="static/samples/subjective_eval/multitrack/GT/4.mp3" type="audio/mpeg">
+                </audio>
+              </div>
+              <div class="audio-item">
+                <span class="music-label"><span class="music-tag ours">Ours</span></span>
+                <audio controls class="music-player" preload="none">
+                  <source src="static/samples/subjective_eval/multitrack/ours/4.mp3" type="audio/mpeg">
+                </audio>
+              </div>
+              <div class="audio-item">
+                <span class="music-label"><span class="music-tag abc">ABC</span></span>
+                <audio controls class="music-player" preload="none">
+                  <source src="static/samples/subjective_eval/multitrack/ABC/4.mp3" type="audio/mpeg">
+                </audio>
+              </div>
+              <div class="audio-item">
+                <span class="music-label"><span class="music-tag remi">REMI</span></span>
+                <audio controls class="music-player" preload="none">
+                  <source src="static/samples/subjective_eval/multitrack/REMI/4.mp3" type="audio/mpeg">
+                </audio>
+              </div>
+              <div class="audio-item">
+                <span class="music-label"><span class="music-tag anticipate">Antic-S</span></span>
+                <audio controls class="music-player" preload="none">
+                  <source src="static/samples/subjective_eval/multitrack/anticipate_small/4.mp3" type="audio/mpeg">
+                </audio>
+              </div>
+              <div class="audio-item">
+                <span class="music-label"><span class="music-tag anticipate">Antic-L</span></span>
+                <audio controls class="music-player" preload="none">
+                  <source src="static/samples/subjective_eval/multitrack/anticipate_large/4.mp3" type="audio/mpeg">
+                </audio>
+              </div>
+            </div>
+          </div>
+
+          <!-- Sample 5 -->
+          <div class="audio-row-pair eval-row">
+            <span class="row-label">Sample 5</span>
+            <div class="audio-grid-eval multitrack-grid">
+              <div class="audio-item">
+                <span class="music-label"><span class="music-tag prompt">Prompt</span></span>
+                <audio controls class="music-player" preload="none">
+                  <source src="static/samples/subjective_eval/multitrack/prompt/1.mp3" type="audio/mpeg">
+                </audio>
+              </div>
+              <div class="audio-item">
+                <span class="music-label"><span class="music-tag gt">GT</span></span>
+                <audio controls class="music-player" preload="none">
+                  <source src="static/samples/subjective_eval/multitrack/GT/1.mp3" type="audio/mpeg">
+                </audio>
+              </div>
+              <div class="audio-item">
+                <span class="music-label"><span class="music-tag ours">Ours</span></span>
+                <audio controls class="music-player" preload="none">
+                  <source src="static/samples/subjective_eval/multitrack/ours/1.mp3" type="audio/mpeg">
+                </audio>
+              </div>
+              <div class="audio-item">
+                <span class="music-label"><span class="music-tag abc">ABC</span></span>
+                <audio controls class="music-player" preload="none">
+                  <source src="static/samples/subjective_eval/multitrack/ABC/1.mp3" type="audio/mpeg">
+                </audio>
+              </div>
+              <div class="audio-item">
+                <span class="music-label"><span class="music-tag remi">REMI</span></span>
+                <audio controls class="music-player" preload="none">
+                  <source src="static/samples/subjective_eval/multitrack/REMI/1.mp3" type="audio/mpeg">
+                </audio>
+              </div>
+              <div class="audio-item">
+                <span class="music-label"><span class="music-tag anticipate">Antic-S</span></span>
+                <audio controls class="music-player" preload="none">
+                  <source src="static/samples/subjective_eval/multitrack/anticipate_small/1.mp3" type="audio/mpeg">
+                </audio>
+              </div>
+              <div class="audio-item">
+                <span class="music-label"><span class="music-tag anticipate">Antic-L</span></span>
+                <audio controls class="music-player" preload="none">
+                  <source src="static/samples/subjective_eval/multitrack/anticipate_large/1.mp3" type="audio/mpeg">
+                </audio>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- Real-time Accompaniment Task -->
+      <div class="samples-section" id="section-accomp-eval">
+        <h3 class="samples-section-title">Real-time Accompaniment</h3>
+        <p class="samples-section-desc">Each sample consists of a melody (vibraphone) and accompaniment (piano). The full melody and initial 4-bar accompaniment are fixed as the prompt, while the remaining accompaniment is generated. Listeners rate samples on: Coherence with Melody (harmony, rhythm alignment), Musical Plausibility (phrase structure, continuity), and Musicality.</p>
+
+        <div class="music-card full-width row-layout">
+          <!-- Sample 1 -->
+          <div class="audio-row-pair eval-row">
+            <span class="row-label">Sample 1</span>
+            <div class="audio-grid-eval accomp-grid">
+              <div class="audio-item">
+                <span class="music-label"><span class="music-tag prompt">Prompt</span></span>
+                <audio controls class="music-player" preload="none">
+                  <source src="static/samples/subjective_eval/accompaniment/prompt/1.mp3" type="audio/mpeg">
+                </audio>
+              </div>
+              <div class="audio-item">
+                <span class="music-label"><span class="music-tag gt">GT</span></span>
+                <audio controls class="music-player" preload="none">
+                  <source src="static/samples/subjective_eval/accompaniment/GT/1.mp3" type="audio/mpeg">
+                </audio>
+              </div>
+              <div class="audio-item">
+                <span class="music-label"><span class="music-tag ours">Ours</span></span>
+                <audio controls class="music-player" preload="none">
+                  <source src="static/samples/subjective_eval/accompaniment/ours/1.mp3" type="audio/mpeg">
+                </audio>
+              </div>
+              <div class="audio-item">
+                <span class="music-label"><span class="music-tag songdriver">SongDriver</span></span>
+                <audio controls class="music-player" preload="none">
+                  <source src="static/samples/subjective_eval/accompaniment/SongDriver/1.mp3" type="audio/mpeg">
+                </audio>
+              </div>
+            </div>
+          </div>
+
+          <!-- Sample 2 -->
+          <div class="audio-row-pair eval-row">
+            <span class="row-label">Sample 2</span>
+            <div class="audio-grid-eval accomp-grid">
+              <div class="audio-item">
+                <span class="music-label"><span class="music-tag prompt">Prompt</span></span>
+                <audio controls class="music-player" preload="none">
+                  <source src="static/samples/subjective_eval/accompaniment/prompt/2.mp3" type="audio/mpeg">
+                </audio>
+              </div>
+              <div class="audio-item">
+                <span class="music-label"><span class="music-tag gt">GT</span></span>
+                <audio controls class="music-player" preload="none">
+                  <source src="static/samples/subjective_eval/accompaniment/GT/2.mp3" type="audio/mpeg">
+                </audio>
+              </div>
+              <div class="audio-item">
+                <span class="music-label"><span class="music-tag ours">Ours</span></span>
+                <audio controls class="music-player" preload="none">
+                  <source src="static/samples/subjective_eval/accompaniment/ours/2.mp3" type="audio/mpeg">
+                </audio>
+              </div>
+              <div class="audio-item">
+                <span class="music-label"><span class="music-tag songdriver">SongDriver</span></span>
+                <audio controls class="music-player" preload="none">
+                  <source src="static/samples/subjective_eval/accompaniment/SongDriver/2.mp3" type="audio/mpeg">
+                </audio>
+              </div>
+            </div>
+          </div>
+
+          <!-- Sample 3 -->
+          <div class="audio-row-pair eval-row">
+            <span class="row-label">Sample 3</span>
+            <div class="audio-grid-eval accomp-grid">
+              <div class="audio-item">
+                <span class="music-label"><span class="music-tag prompt">Prompt</span></span>
+                <audio controls class="music-player" preload="none">
+                  <source src="static/samples/subjective_eval/accompaniment/prompt/3.mp3" type="audio/mpeg">
+                </audio>
+              </div>
+              <div class="audio-item">
+                <span class="music-label"><span class="music-tag gt">GT</span></span>
+                <audio controls class="music-player" preload="none">
+                  <source src="static/samples/subjective_eval/accompaniment/GT/3.mp3" type="audio/mpeg">
+                </audio>
+              </div>
+              <div class="audio-item">
+                <span class="music-label"><span class="music-tag ours">Ours</span></span>
+                <audio controls class="music-player" preload="none">
+                  <source src="static/samples/subjective_eval/accompaniment/ours/3.mp3" type="audio/mpeg">
+                </audio>
+              </div>
+              <div class="audio-item">
+                <span class="music-label"><span class="music-tag songdriver">SongDriver</span></span>
+                <audio controls class="music-player" preload="none">
+                  <source src="static/samples/subjective_eval/accompaniment/SongDriver/3.mp3" type="audio/mpeg">
+                </audio>
+              </div>
+            </div>
+          </div>
+
+          <!-- Sample 4 -->
+          <div class="audio-row-pair eval-row">
+            <span class="row-label">Sample 4</span>
+            <div class="audio-grid-eval accomp-grid">
+              <div class="audio-item">
+                <span class="music-label"><span class="music-tag prompt">Prompt</span></span>
+                <audio controls class="music-player" preload="none">
+                  <source src="static/samples/subjective_eval/accompaniment/prompt/4.mp3" type="audio/mpeg">
+                </audio>
+              </div>
+              <div class="audio-item">
+                <span class="music-label"><span class="music-tag gt">GT</span></span>
+                <audio controls class="music-player" preload="none">
+                  <source src="static/samples/subjective_eval/accompaniment/GT/4.mp3" type="audio/mpeg">
+                </audio>
+              </div>
+              <div class="audio-item">
+                <span class="music-label"><span class="music-tag ours">Ours</span></span>
+                <audio controls class="music-player" preload="none">
+                  <source src="static/samples/subjective_eval/accompaniment/ours/4.mp3" type="audio/mpeg">
+                </audio>
+              </div>
+              <div class="audio-item">
+                <span class="music-label"><span class="music-tag songdriver">SongDriver</span></span>
+                <audio controls class="music-player" preload="none">
+                  <source src="static/samples/subjective_eval/accompaniment/SongDriver/4.mp3" type="audio/mpeg">
+                </audio>
+              </div>
+            </div>
+          </div>
+
+          <!-- Sample 5 -->
+          <div class="audio-row-pair eval-row">
+            <span class="row-label">Sample 5</span>
+            <div class="audio-grid-eval accomp-grid">
+              <div class="audio-item">
+                <span class="music-label"><span class="music-tag prompt">Prompt</span></span>
+                <audio controls class="music-player" preload="none">
+                  <source src="static/samples/subjective_eval/accompaniment/prompt/5.mp3" type="audio/mpeg">
+                </audio>
+              </div>
+              <div class="audio-item">
+                <span class="music-label"><span class="music-tag gt">GT</span></span>
+                <audio controls class="music-player" preload="none">
+                  <source src="static/samples/subjective_eval/accompaniment/GT/5.mp3" type="audio/mpeg">
+                </audio>
+              </div>
+              <div class="audio-item">
+                <span class="music-label"><span class="music-tag ours">Ours</span></span>
+                <audio controls class="music-player" preload="none">
+                  <source src="static/samples/subjective_eval/accompaniment/ours/5.mp3" type="audio/mpeg">
+                </audio>
+              </div>
+              <div class="audio-item">
+                <span class="music-label"><span class="music-tag songdriver">SongDriver</span></span>
+                <audio controls class="music-player" preload="none">
+                  <source src="static/samples/subjective_eval/accompaniment/SongDriver/5.mp3" type="audio/mpeg">
+                </audio>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+
+    </div>
+  </section>
+
+
+  </main>
+
+  <!-- Section Navigation -->
+  <nav class="section-nav" id="sectionNav">
+    <a href="#" class="section-nav-item" data-section="top">
+      <span class="section-nav-label">Top</span>
+      <span class="section-nav-dot"></span>
+    </a>
+    <a href="#section-piano-eval" class="section-nav-item" data-section="section-piano-eval">
+      <span class="section-nav-label">Piano</span>
+      <span class="section-nav-dot"></span>
+    </a>
+    <a href="#section-multitrack-eval" class="section-nav-item" data-section="section-multitrack-eval">
+      <span class="section-nav-label">Multitrack</span>
+      <span class="section-nav-dot"></span>
+    </a>
+    <a href="#section-accomp-eval" class="section-nav-item" data-section="section-accomp-eval">
+      <span class="section-nav-label">Accompaniment</span>
+      <span class="section-nav-dot"></span>
+    </a>
+  </nav>
+
+  <!-- Mobile Bottom Navigation -->
+  <nav class="mobile-section-nav" id="mobileNav">
+    <a href="#" class="mobile-nav-item active" data-section="top">
+      <i class="fas fa-home"></i>
+      <span>Top</span>
+    </a>
+    <a href="#section-piano-eval" class="mobile-nav-item" data-section="section-piano-eval">
+      <i class="fas fa-music"></i>
+      <span>Piano</span>
+    </a>
+    <a href="#section-multitrack-eval" class="mobile-nav-item" data-section="section-multitrack-eval">
+      <i class="fas fa-layer-group"></i>
+      <span>Multitrack</span>
+    </a>
+    <a href="#section-accomp-eval" class="mobile-nav-item" data-section="section-accomp-eval">
+      <i class="fas fa-hands-helping"></i>
+      <span>Accomp.</span>
+    </a>
+  </nav>
+
+  <script>
+    // Audio/Video mutual exclusion - only one media plays at a time
+    document.addEventListener('DOMContentLoaded', function() {
+      const allMedia = document.querySelectorAll('audio, video');
+      allMedia.forEach(media => {
+        media.addEventListener('play', function() {
+          allMedia.forEach(other => {
+            if (other !== media) {
+              other.pause();
+            }
+          });
+        });
+      });
+    });
+
+    // Section Navigation
+    const sections = ['top', 'section-piano-eval', 'section-multitrack-eval', 'section-accomp-eval'];
+    const navItems = document.querySelectorAll('.section-nav-item');
+    const mobileNavItems = document.querySelectorAll('.mobile-nav-item');
+
+    // Smooth scroll for nav items
+    document.querySelectorAll('.section-nav-item, .mobile-nav-item').forEach(item => {
+      item.addEventListener('click', function(e) {
+        e.preventDefault();
+        const sectionId = this.getAttribute('data-section');
+        if (sectionId === 'top') {
+          window.scrollTo({ top: 0, behavior: 'smooth' });
+        } else {
+          const section = document.getElementById(sectionId);
+          if (section) {
+            section.scrollIntoView({ behavior: 'smooth', block: 'start' });
+          }
+        }
+      });
+    });
+
+    // Update active state on scroll
+    function updateActiveNav() {
+      const scrollPos = window.scrollY + window.innerHeight / 3;
+
+      let currentSection = 'top';
+
+      sections.forEach(sectionId => {
+        if (sectionId === 'top') return;
+        const section = document.getElementById(sectionId);
+        if (section && section.offsetTop <= scrollPos) {
+          currentSection = sectionId;
+        }
+      });
+
+      // Update desktop nav
+      navItems.forEach(item => {
+        item.classList.remove('active');
+        if (item.getAttribute('data-section') === currentSection) {
+          item.classList.add('active');
+        }
+      });
+
+      // Update mobile nav
+      mobileNavItems.forEach(item => {
+        item.classList.remove('active');
+        if (item.getAttribute('data-section') === currentSection) {
+          item.classList.add('active');
+        }
+      });
+
+      // Show/hide nav based on scroll position
+      const sectionNav = document.getElementById('sectionNav');
+      const mobileNav = document.getElementById('mobileNav');
+      if (window.pageYOffset > 300) {
+        sectionNav.classList.add('visible');
+        mobileNav.classList.add('visible');
+      } else {
+        sectionNav.classList.remove('visible');
+        mobileNav.classList.remove('visible');
+      }
+    }
+
+    window.addEventListener('scroll', updateActiveNav);
+    updateActiveNav(); // Initial call
+  </script>
+
+</body>
+</html>

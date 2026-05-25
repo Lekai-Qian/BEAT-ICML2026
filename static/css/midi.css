@@ -1,0 +1,123 @@
+/* ---- 通用：让三块视觉风格更统一一些（可选） ---- */
+.midi-block { max-width: 980px; }
+.midi-block h3.title { margin-bottom: .6rem; }
+
+/* =========================
+   主题 A：theme-yellow（旧 demo 风）
+   ========================= */
+.midi-style.theme-yellow midi-player {
+  display: block;
+  width: 100%;
+  margin: 4px 0 0;
+}
+.midi-style.theme-yellow midi-player::part(control-panel) {
+  background: #fffb99;         /* 更柔和的黄，避免太刺眼 */
+  border: 2px solid #000;
+  border-radius: 10px 10px 0 0;
+  padding: 6px 8px;
+}
+.midi-style.theme-yellow midi-player::part(play-button) {
+  color: #2e5e2e;
+  border: 2px solid currentColor;
+  background-color: #54d654;
+  border-radius: 18px;
+  transition: all .18s ease;
+}
+.midi-style.theme-yellow midi-player::part(play-button):hover {
+  color: #0a7a0a;
+  background-color: #60eb60;
+  border-radius: 10px;
+}
+.midi-style.theme-yellow midi-player::part(time) {
+  font-family: ui-monospace, SFMono-Regular, Menlo, Consolas, "Liberation Mono", monospace;
+  font-weight: 600;
+}
+
+/* 可视化容器（piano-roll / staff 都统一边框与圆角） */
+.midi-style.theme-yellow midi-visualizer .piano-roll-visualizer,
+.midi-style.theme-yellow midi-visualizer .staff-visualizer {
+  background: #fff8cc;
+  border: 2px solid #000;
+  border-top: none;
+  border-radius: 0 0 10px 10px;
+  margin: 0 0 4px;
+  overflow: auto;
+}
+
+/* 音符样式（piano-roll） */
+.midi-style.theme-yellow midi-visualizer svg rect.note {
+  opacity: .7;
+  stroke-width: 2;
+}
+.midi-style.theme-yellow midi-visualizer svg rect.note[data-instrument="0"] { fill: #e33; stroke: #500; }
+.midi-style.theme-yellow midi-visualizer svg rect.note[data-instrument="2"] { fill: #2ee; stroke: #055; }
+.midi-style.theme-yellow midi-visualizer svg rect.note[data-is-drum="true"] { fill: #888; stroke: #888; }
+.midi-style.theme-yellow midi-visualizer svg rect.note.active { opacity: .95; stroke: #000; }
+
+/* =========================
+   主题 B：theme-clean（中性卡片风，可选）
+   ========================= */
+.midi-style.theme-clean midi-player {
+  display: block;
+  width: 100%;
+  margin: 10px 0 0;
+}
+.midi-style.theme-clean midi-player::part(control-panel) {
+  background: #f6f7f9;
+  border: 1px solid #e3e6ea;
+  border-radius: 12px 12px 0 0;
+  padding: 8px 10px;
+  box-shadow: 0 1px 2px rgba(0,0,0,.05);
+}
+.midi-style.theme-clean midi-player::part(play-button) {
+  color: #1f2937;
+  border: 1px solid #d1d5db;
+  background-color: #ffffff;
+  border-radius: 14px;
+  transition: transform .12s ease, background .12s ease;
+}
+.midi-style.theme-clean midi-player::part(play-button):hover {
+  background-color: #f3f4f6;
+  transform: translateY(-1px);
+}
+.midi-style.theme-clean midi-player::part(time) {
+  font-variant-numeric: tabular-nums;
+  color: #374151;
+}
+
+.midi-style.theme-clean midi-visualizer .piano-roll-visualizer,
+.midi-style.theme-clean midi-visualizer .staff-visualizer {
+  background: #ffffff;
+  border: 1px solid #e3e6ea;
+  border-top: none;
+  border-radius: 0 0 12px 12px;
+  margin: 0;
+  overflow: auto;
+  box-shadow: 0 2px 6px rgba(0,0,0,.04);
+}
+
+.midi-style.theme-clean midi-visualizer svg rect.note {
+  opacity: .8;
+  stroke-width: 1.5;
+  stroke: rgba(0,0,0,.25);
+}
+.midi-style.theme-clean midi-visualizer svg rect.note.active {
+  opacity: 1;
+  stroke: #111827;
+}
+
+
+.midi-block {
+  max-width: 800px;
+  margin: 0 auto;
+  text-align: center;
+}
+
+.midi-block midi-player,
+.midi-block midi-visualizer {
+  display: block;
+  max-width: 100%;
+  margin-left: auto;
+  margin-right: auto;
+}
+
