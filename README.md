@@ -1,6 +1,6 @@
 # BEAT: Tokenizing and Generating Symbolic Music by Uniform Temporal Steps
 
-[Demo](https://marisa-ovo.github.io/BEAT-ICML2026/) | [Paper] (coming soon)
+[Demo](https://lekai-qian.github.io/BEAT-ICML2026/) | [Paper] (coming soon)
 
 This is the code repository of the paper:
 
