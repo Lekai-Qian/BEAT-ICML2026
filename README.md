@@ -16,7 +16,7 @@ The codebase will be released in this repository in the coming weeks. The curren
 A full release will include training and inference scripts, pretrained checkpoints for both the piano and multi-track settings, and reproducible evaluation pipelines for the objective, subjective, and pattern-probing experiments reported in the paper.
 
 
-# Repository layout
+# Repository layout 
 ```
 .
 ├── index.html, static/      # Demo page (served by GitHub Pages)
