@@ -1,5 +1,7 @@
 # BEAT: Tokenizing and Generating Symbolic Music by Uniform Temporal Steps
 
+> ⚠️ **Repository status: work in progress.** Only the demo page is currently live. The source code, pretrained checkpoints, and training / inference scripts are in active preparation and will be added in the coming weeks. The directory tree under [`code/`](code/) is a placeholder describing the intended module layout.
+
 [Demo](https://lekai-qian.github.io/BEAT-ICML2026/) | [Paper] (coming soon)
 
 This is the code repository of the paper:
