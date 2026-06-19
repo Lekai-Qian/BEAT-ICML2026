@@ -1,32 +1,51 @@
 # BEAT: Tokenizing and Generating Symbolic Music by Uniform Temporal Steps
 
-> ⚠️ **Repository status: work in progress.** Only the demo page is currently live. The source code, pretrained checkpoints, and training / inference scripts are in active preparation and will be added in the coming weeks. The directory tree under [`code/`](code/) is a placeholder describing the intended module layout.
-
 [Demo](https://lekai-qian.github.io/BEAT-ICML2026/) | [Paper] (coming soon)
 
 This is the code repository of the paper:
 
 > BEAT: Tokenizing and Generating Symbolic Music by Uniform Temporal Steps. ICML 2026.
 
+BEAT encodes symbolic music in uniform temporal steps and generates it with a
+single LLaMA backbone over a unified token vocabulary, supporting both solo
+**piano** and **multi-track** settings.
 
 # Status
-The codebase will be released in this repository in the coming weeks. The current snapshot includes:
 
-1. The demo page (audio examples, repetition–diversity visualisations, qualitative comparisons), served at the link above.
-2. Placeholder structure under [`code/`](code/) listing the intended modules (tokenizer, model, data pipeline, tasks, evaluation, and baselines).
+The reference implementation is now available under
+[`code/beat_camera/`](code/beat_camera/) — the BEAT tokenizer, the LLaMA
+backbone, the MIDI/MusicXML data-preparation pipeline, and the training /
+generation / continuation scripts. Pretrained checkpoints (piano and
+multi-track) and the processed datasets will be released here separately.
 
-A full release will include training and inference scripts, pretrained checkpoints for both the piano and multi-track settings, and reproducible evaluation pipelines for the objective, subjective, and pattern-probing experiments reported in the paper.
+The demo page (audio examples, repetition–diversity visualisations, and
+qualitative comparisons) is served at the link above.
 
+# Quick start
 
-# Repository layout 
+```bash
+cd code
+pip install -r beat_camera/requirements.txt
+
+# continue a MIDI prompt (piano or multi-track)
+python -m beat_camera.scripts.continue_piano \
+    --checkpoint <ckpt.pt> --midi song.mid --prompt_bars 2
+```
+
+See [`code/beat_camera/README.md`](code/beat_camera/README.md) for the full API,
+the data-preparation pipeline, and more examples.
+
+# Repository layout
+
 ```
 .
 ├── index.html, static/      # Demo page (served by GitHub Pages)
-└── code/                    # Source code
-    ├── beat_tokenizer/      # BEAT encoding & decoding
-    ├── model/               # LLaMA-style decoder with RoPE
-    ├── data/                # MIDI/MuseScore preprocessing & augmentation
-    ├── tasks/               # Continuation, accompaniment, probing
-    ├── evaluation/          # JS divergence, FMD, unique-beat, BPE
-    └── baselines/           # REMI, Compound Word, Interleaved ABC, Naive Piano-Roll, ...
+└── code/
+    └── beat_camera/         # BEAT reference implementation
+        ├── config.py        # model + training configuration
+        ├── beat/            # unified vocabulary, base-3 codec, LLaMA backbone
+        ├── piano/           # piano tokenizer / decoder / dataset / inference
+        ├── multitrack/      # multi-track tokenizer / decoder / dataset
+        ├── data_prep/       # MIDI / MusicXML -> NPZ converters
+        └── scripts/         # train / generate / continue entry points
 ```

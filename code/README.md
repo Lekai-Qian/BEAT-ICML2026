@@ -1,58 +1,43 @@
-# BEAT: Tokenizing and Generating Symbolic Music by Uniform Temporal Steps
+# BEAT — source code
 
-## Code Structure
+The BEAT reference implementation lives in [`beat_camera/`](beat_camera/): a
+single LLaMA backbone over a unified 593-token vocabulary that generates both
+solo **piano** and **multi-track** symbolic music. See
+[`beat_camera/README.md`](beat_camera/README.md) for the full API,
+data-preparation pipeline, and runnable examples.
+
+## Structure
 
 ```
 code/
-├── beat_tokenizer/          # BEAT encoding & decoding
-│   ├── encoder.py           # Piano-roll → BEAT token sequence
-│   ├── decoder.py           # BEAT token sequence → Piano-roll / MIDI
-│   ├── vocab.py             # Token vocabulary definition
-│   └── utils.py             # Base-3 conversion, mean velocity, etc.
-├── model/                   # Transformer language model
-│   ├── transformer.py       # LLaMA-style decoder with RoPE
-│   ├── config.py            # Model hyperparameters
-│   └── generate.py          # Sampling & decoding strategies
-├── data/                    # Data processing pipeline
-│   ├── preprocess.py        # MIDI/MuseScore → quantized piano-roll
-│   ├── dataset.py           # PyTorch dataset & batch construction
-│   └── augment.py           # Transposition augmentation
-├── tasks/                   # Task-specific scripts
-│   ├── continuation.py      # Piano & multi-track continuation
-│   ├── accompaniment.py     # Real-time accompaniment generation
-│   └── probing.py           # Structural pattern probing tasks
-├── evaluation/              # Evaluation metrics
-│   ├── objective.py         # JS divergence (GC, SC) & FMD
-│   ├── unique_beat.py       # Unique beat ratio analysis
-│   └── bpe_analysis.py      # BPE compression rate
-├── baselines/               # Baseline tokenization implementations
-│   ├── remi.py
-│   ├── compound_word.py
-│   └── interleaved_abc.py
-├── train.py                 # Training entry point
-├── evaluate.py              # Evaluation entry point
-└── requirements.txt
+└── beat_camera/
+    ├── config.py            # shared model config + per-mode train configs
+    ├── beat/                # shared library: vocab, base-3 codec, LLaMA backbone
+    ├── piano/               # piano mode: tokenizer / decoder / dataset / inference
+    ├── multitrack/          # multi-track mode: tokenizer / decoder / dataset
+    ├── data_prep/           # MIDI / MusicXML -> NPZ converters (data pipeline)
+    └── scripts/             # train / generate / continue entry points
 ```
 
-## Quick Start
+## Quick start
+
+Run modules from the `code/` directory so that `beat_camera` is importable:
 
 ```bash
-# Install dependencies
-pip install -r requirements.txt
+cd code
+pip install -r beat_camera/requirements.txt
 
-# Preprocess data
-python data/preprocess.py --input_dir /path/to/midi --output_dir /path/to/processed
+# continue a MIDI prompt (piano)
+python -m beat_camera.scripts.continue_piano \
+    --checkpoint <ckpt.pt> --midi song.mid --prompt_bars 2
 
-# Train
-python train.py --config configs/piano.yaml
+# continue a MIDI prompt (multi-track)
+python -m beat_camera.scripts.continue_multitrack \
+    --checkpoint <ckpt.pt> --midi song.mid --prompt_bars 2
 
-# Generate continuation
-python tasks/continuation.py --checkpoint /path/to/ckpt --prompt /path/to/prompt.mid
-
-# Real-time accompaniment
-python tasks/accompaniment.py --checkpoint /path/to/ckpt --melody /path/to/melody.mid
+# build training data from a MIDI folder
+python -m beat_camera.data_prep.midi2pianonpz <midi_dir> --output_dir <out_dir>
 ```
 
-## Coming Soon
-
-Code and pretrained checkpoints will be released upon paper acceptance.
+Every entry point prints `--help` for its full option list. Pretrained
+checkpoints and the processed datasets will be released separately.
